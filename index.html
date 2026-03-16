@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 
 <head>
@@ -25,7 +24,7 @@ height:100vh;
 overflow:hidden;
 }
 
-/* área do zoom */
+/* área principal */
 
 #zoom-container{
 width:95vw;
@@ -33,6 +32,7 @@ max-width:420px;
 height:92vh;
 overflow:hidden;
 touch-action:none;
+position:relative;
 }
 
 /* flipbook */
@@ -41,7 +41,7 @@ touch-action:none;
 width:100%;
 height:100%;
 transform-origin:center center;
-transition:transform 0.15s ease;
+transition:transform .15s ease;
 }
 
 /* páginas */
@@ -57,6 +57,7 @@ justify-content:center;
 width:100%;
 height:100%;
 object-fit:contain;
+pointer-events:none;
 }
 
 /* botões */
@@ -120,33 +121,39 @@ maxWidth:600,
 minHeight:400,
 maxHeight:900,
 maxShadowOpacity:0.5,
-showCover:false, /* remove capa dura */
+showCover:false,
 mobileScrollSupport:false
 }
 );
 
 pageFlip.loadFromHTML(document.querySelectorAll(".page"));
 
-/* som */
+/* som de página */
 
 const sound=document.getElementById("flipSound");
 
 pageFlip.on("flip",()=>{
+
 sound.currentTime=0;
 sound.play();
+
 });
 
 /* botões */
 
 document.getElementById("next").onclick=()=>{
-pageFlip.flipNext();
+
+if(scale===1) pageFlip.flipNext();
+
 }
 
 document.getElementById("prev").onclick=()=>{
-pageFlip.flipPrev();
+
+if(scale===1) pageFlip.flipPrev();
+
 }
 
-/* ZOOM COM GESTO */
+/* ZOOM AVANÇADO */
 
 const container=document.getElementById("zoom-container");
 const book=document.getElementById("book");
@@ -155,15 +162,23 @@ let scale=1;
 let startDistance=0;
 let zooming=false;
 
+let posX=0;
+let posY=0;
+let startX=0;
+let startY=0;
+
 /* distância entre dedos */
 
 function getDistance(touches){
+
 const dx=touches[0].clientX - touches[1].clientX;
 const dy=touches[0].clientY - touches[1].clientY;
+
 return Math.sqrt(dx*dx + dy*dy);
+
 }
 
-/* início do gesto */
+/* início toque */
 
 container.addEventListener("touchstart",(e)=>{
 
@@ -172,9 +187,14 @@ if(e.touches.length===2){
 zooming=true;
 startDistance=getDistance(e.touches);
 
-/* bloqueia virar página */
-
 pageFlip.disable();
+
+}
+
+if(e.touches.length===1 && scale>1){
+
+startX=e.touches[0].clientX-posX;
+startY=e.touches[0].clientY-posY;
 
 }
 
@@ -183,6 +203,8 @@ pageFlip.disable();
 /* movimento */
 
 container.addEventListener("touchmove",(e)=>{
+
+/* pinch zoom */
 
 if(e.touches.length===2){
 
@@ -194,32 +216,76 @@ let zoom=newDistance/startDistance;
 
 scale=Math.min(Math.max(1,zoom),3);
 
-book.style.transform="scale("+scale+")";
+applyTransform();
+
+}
+
+/* arrastar imagem */
+
+if(e.touches.length===1 && scale>1){
+
+posX=e.touches[0].clientX-startX;
+posY=e.touches[0].clientY-startY;
+
+applyTransform();
 
 }
 
 });
 
-/* fim do gesto */
+/* fim toque */
 
 container.addEventListener("touchend",()=>{
 
 if(zooming){
 
 zooming=false;
+pageFlip.enable();
 
-/* reativa virada */
+}
+
+});
+
+/* aplicar transform */
+
+function applyTransform(){
+
+book.style.transform=`translate(${posX}px,${posY}px) scale(${scale})`;
+
+}
+
+/* duplo toque */
+
+let lastTap=0;
+
+container.addEventListener("touchend",(e)=>{
+
+const now=new Date().getTime();
+const tapLength=now-lastTap;
+
+if(tapLength<300 && tapLength>0){
+
+if(scale===1){
+
+scale=2;
+
+pageFlip.disable();
+
+}else{
+
+scale=1;
+posX=0;
+posY=0;
 
 pageFlip.enable();
 
 }
 
-if(scale<1.05){
-
-scale=1;
-book.style.transform="scale(1)";
+applyTransform();
 
 }
+
+lastTap=now;
 
 });
 
