@@ -1,11 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Catálogo</title>
 
 <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
@@ -24,24 +23,12 @@ height:100vh;
 overflow:hidden;
 }
 
-/* área principal */
+/* área do livro */
 
-#zoom-container{
+#book{
 width:95vw;
 max-width:420px;
 height:92vh;
-overflow:hidden;
-touch-action:none;
-position:relative;
-}
-
-/* flipbook */
-
-#book{
-width:100%;
-height:100%;
-transform-origin:center center;
-transition:transform .15s ease;
 }
 
 /* páginas */
@@ -51,13 +38,15 @@ background:white;
 display:flex;
 align-items:center;
 justify-content:center;
+overflow:hidden;
 }
 
 .page img{
 width:100%;
 height:100%;
 object-fit:contain;
-pointer-events:none;
+transform-origin:center;
+transition:transform .05s linear;
 }
 
 /* botões */
@@ -84,8 +73,6 @@ border-radius:6px;
 
 <body>
 
-<div id="zoom-container">
-
 <div id="book">
 
 <div class="page"><img src="pages/1.jpg"></div>
@@ -94,8 +81,6 @@ border-radius:6px;
 <div class="page"><img src="pages/4.jpg"></div>
 <div class="page"><img src="pages/5.jpg"></div>
 <div class="page"><img src="pages/6.jpg"></div>
-
-</div>
 
 </div>
 
@@ -116,11 +101,6 @@ document.getElementById("book"),
 width:400,
 height:700,
 size:"stretch",
-minWidth:300,
-maxWidth:600,
-minHeight:400,
-maxHeight:900,
-maxShadowOpacity:0.5,
 showCover:false,
 mobileScrollSupport:false
 }
@@ -128,7 +108,7 @@ mobileScrollSupport:false
 
 pageFlip.loadFromHTML(document.querySelectorAll(".page"));
 
-/* som de página */
+/* som */
 
 const sound=document.getElementById("flipSound");
 
@@ -136,6 +116,10 @@ pageFlip.on("flip",()=>{
 
 sound.currentTime=0;
 sound.play();
+
+/* reset zoom ao trocar página */
+
+resetZoom();
 
 });
 
@@ -153,34 +137,48 @@ if(scale===1) pageFlip.flipPrev();
 
 }
 
-/* ZOOM AVANÇADO */
-
-const container=document.getElementById("zoom-container");
-const book=document.getElementById("book");
+/* ======================= */
+/* SISTEMA DE ZOOM REAL */
+/* ======================= */
 
 let scale=1;
-let startDistance=0;
-let zooming=false;
-
 let posX=0;
 let posY=0;
 let startX=0;
 let startY=0;
 
+let startDistance=0;
+let zooming=false;
+
+/* pega imagem da página atual */
+
+function getActiveImage(){
+
+const page=document.querySelector(".stf__item--active");
+
+if(!page) return null;
+
+return page.querySelector("img");
+
+}
+
 /* distância entre dedos */
 
 function getDistance(touches){
 
-const dx=touches[0].clientX - touches[1].clientX;
-const dy=touches[0].clientY - touches[1].clientY;
+const dx=touches[0].clientX-touches[1].clientX;
+const dy=touches[0].clientY-touches[1].clientY;
 
-return Math.sqrt(dx*dx + dy*dy);
+return Math.sqrt(dx*dx+dy*dy);
 
 }
 
-/* início toque */
+/* início gesto */
 
-container.addEventListener("touchstart",(e)=>{
+document.addEventListener("touchstart",(e)=>{
+
+const img=getActiveImage();
+if(!img) return;
 
 if(e.touches.length===2){
 
@@ -202,7 +200,10 @@ startY=e.touches[0].clientY-posY;
 
 /* movimento */
 
-container.addEventListener("touchmove",(e)=>{
+document.addEventListener("touchmove",(e)=>{
+
+const img=getActiveImage();
+if(!img) return;
 
 /* pinch zoom */
 
@@ -211,31 +212,30 @@ if(e.touches.length===2){
 e.preventDefault();
 
 const newDistance=getDistance(e.touches);
-
 let zoom=newDistance/startDistance;
 
-scale=Math.min(Math.max(1,zoom),3);
+scale=Math.min(Math.max(1,zoom),4);
 
-applyTransform();
+applyTransform(img);
 
 }
 
-/* arrastar imagem */
+/* mover imagem */
 
 if(e.touches.length===1 && scale>1){
 
 posX=e.touches[0].clientX-startX;
 posY=e.touches[0].clientY-startY;
 
-applyTransform();
+applyTransform(img);
 
 }
 
 });
 
-/* fim toque */
+/* fim gesto */
 
-container.addEventListener("touchend",()=>{
+document.addEventListener("touchend",()=>{
 
 if(zooming){
 
@@ -248,9 +248,23 @@ pageFlip.enable();
 
 /* aplicar transform */
 
-function applyTransform(){
+function applyTransform(img){
 
-book.style.transform=`translate(${posX}px,${posY}px) scale(${scale})`;
+img.style.transform=`translate(${posX}px,${posY}px) scale(${scale})`;
+
+}
+
+/* reset */
+
+function resetZoom(){
+
+scale=1;
+posX=0;
+posY=0;
+
+document.querySelectorAll(".page img").forEach(img=>{
+img.style.transform="scale(1)";
+});
 
 }
 
@@ -258,30 +272,28 @@ book.style.transform=`translate(${posX}px,${posY}px) scale(${scale})`;
 
 let lastTap=0;
 
-container.addEventListener("touchend",(e)=>{
+document.addEventListener("touchend",(e)=>{
 
 const now=new Date().getTime();
-const tapLength=now-lastTap;
+const diff=now-lastTap;
 
-if(tapLength<300 && tapLength>0){
+const img=getActiveImage();
+
+if(diff<300 && diff>0 && img){
 
 if(scale===1){
 
 scale=2;
-
 pageFlip.disable();
 
 }else{
 
-scale=1;
-posX=0;
-posY=0;
-
+resetZoom();
 pageFlip.enable();
 
 }
 
-applyTransform();
+applyTransform(img);
 
 }
 
