@@ -19,13 +19,13 @@ body {
   overflow: hidden;
 }
 
-/* Área de zoom — recebe todos os eventos de toque */
+/* Área de zoom */
 #zoom-container {
   width: 95vw;
   max-width: 420px;
-  height: calc(100vh - 70px); /* espaço para os botões */
+  height: calc(100vh - 70px);
   overflow: hidden;
-  touch-action: none;   /* ← essencial: impede o browser de interceptar toques */
+  touch-action: none;
   position: relative;
   cursor: grab;
 }
@@ -36,7 +36,6 @@ body {
   width: 100%;
   height: 100%;
   transform-origin: center center;
-  /* sem transition aqui — o zoom em tempo real não pode ter lag */
 }
 
 /* Páginas */
@@ -55,7 +54,7 @@ body {
   -webkit-user-drag: none;
 }
 
-/* Botões */
+/* Botões de navegação */
 .controls {
   position: fixed;
   bottom: 12px;
@@ -75,7 +74,7 @@ body {
 }
 .controls button:active { background: #555; }
 
-/* Indicador de zoom (aparece quando ampliado) */
+/* Indicador de zoom */
 #zoom-badge {
   position: fixed;
   top: 12px;
@@ -94,7 +93,7 @@ body {
 }
 #zoom-badge.visible { opacity: 1; }
 
-/* Botão de reset zoom */
+/* Botão reset zoom */
 #zoom-reset {
   position: fixed;
   top: 12px;
@@ -114,8 +113,7 @@ body {
 #zoom-reset.visible { opacity: 1; pointer-events: auto; }
 
 /* ══════════════════════════════════════
-   BOTÃO DE MÚSICA — canto superior esquerdo
-   Acima da área do livro, sempre visível
+   BOTÃO DE MÚSICA
 ══════════════════════════════════════ */
 #btn-music {
   position: fixed;
@@ -139,10 +137,9 @@ body {
   transition: background 0.2s, opacity 0.2s;
   animation: musicPulse 1.6s ease-in-out infinite;
 }
-#btn-music:hover        { background: rgba(0,0,0,0.8); }
-#btn-music.muted        { animation: none; opacity: 0.45; }
+#btn-music:hover  { background: rgba(0,0,0,0.8); }
+#btn-music.muted  { animation: none; opacity: 0.45; }
 
-/* Pulse bem visível: anel branco expandindo */
 @keyframes musicPulse {
   0%   { box-shadow: 0 0 0  0px rgba(255,255,255,0.9); }
   70%  { box-shadow: 0 0 0 16px rgba(255,255,255,0.0); }
@@ -151,8 +148,6 @@ body {
 
 /* ══════════════════════════════════════
    CAMADA DE HOTSPOTS
-   Sobreposta ao zoom-container,
-   acompanha o book quando há zoom
 ══════════════════════════════════════ */
 #hotspot-layer {
   position: absolute;
@@ -162,92 +157,47 @@ body {
   transform-origin: center center;
 }
 
-/* Grupo por página — oculto por padrão */
 .hotspot-group {
   display: none;
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-.hotspot-group.active {
-  display: block;
-}
+.hotspot-group.active { display: block; }
 
-/*
-  ══════════════════════════════════════
-  HOTSPOT — botão de vidro clicável
-
-  Posição em % para ser proporcional
-  em qualquer tamanho de tela.
-  ══════════════════════════════════════
-*/
 .hotspot-btn {
   position: absolute;
   pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   text-decoration: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  /* Efeito de vidro (glassmorphism) */
-  background: rgba(255,255,255,0.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(255,255,255,0.45);
+  /* ✏️ VISIBILIDADE DO HOTSPOT
+     Invisível (produção)  → background: transparent;
+     Visível  (calibrar)   → background: rgba(255,0,0,0.25); */
+  background: transparent;
   border-radius: 40px;
-  box-shadow:
-    0 4px 18px rgba(0,0,0,0.18),
-    inset 0 1px 0 rgba(255,255,255,0.35);
-  /* Altura e padding via inline style ou abaixo */
   padding: 11px 20px;
-  transition: background 0.2s, box-shadow 0.2s;
-
-  /* Pulse suave */
-  animation: hotPulse 2.2s ease-in-out infinite;
+  transition: background 0.2s;
+  /* ✏️ BORDA E SOMBRA
+     Invisível (produção)  → remova as 2 linhas abaixo
+     Visível  (calibrar)   → descomente as 2 linhas abaixo */
+  /* border: 1.5px solid rgba(255,255,255,0.45); */
+  /* box-shadow: 0 4px 18px rgba(0,0,0,0.18); */
 }
-.hotspot-btn:active {
-  background: rgba(255,255,255,0.32);
-  transform: scale(0.97);
-}
-
-@keyframes hotPulse {
-  0%, 100% { box-shadow: 0 4px 18px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.35); }
-  50%       { box-shadow: 0 4px 28px rgba(255,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.35); }
-}
-
-/* Ícone dentro do botão de vidro */
-.hotspot-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-/* Texto do botão de vidro */
-.hotspot-label {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: white;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  pointer-events: none;
-  white-space: nowrap;
-}
+.hotspot-btn:active { transform: scale(0.97); }
 
 /*
-  ✏️ VISIBILIDADE — para calibrar posição:
-  Mude background do .hotspot-btn para rgba(255,0,0,0.4)
-  e descomente o outline abaixo para ver a área exata.
-  Depois volte ao original.
+  ✏️ OUTLINE DE DEBUG — descomente para ver a área exata:
+  .hotspot-btn { outline: 2px dashed red; }
 */
-/* .hotspot-btn { outline: 2px dashed red; } */
 </style>
 </head>
 <body>
 
-<!-- ══ BOTÃO DE MÚSICA — canto superior esquerdo ══ -->
+<!-- ══ BOTÃO DE MÚSICA ══ -->
 <button id="btn-music" title="Som">♪</button>
 
 <div id="zoom-container">
@@ -263,82 +213,54 @@ body {
     <div class="page"><img src="pages/8.jpg" alt="Página 8"></div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       CAMADA DE HOTSPOTS
-       Fica dentro do zoom-container para acompanhar o zoom
-  ══════════════════════════════════════════════════════ -->
+  <!-- ══ CAMADA DE HOTSPOTS ══ -->
   <div id="hotspot-layer">
 
     <!--
     ╔══════════════════════════════════════════════════════════╗
     ║   ✏️  HOTSPOTS — COMO CONFIGURAR                         ║
     ╠══════════════════════════════════════════════════════════╣
-    ║                                                          ║
-    ║  • data-page="5"  → página em que o grupo aparece       ║
-    ║                     mude este número para trocar a pág.  ║
-    ║                                                          ║
-    ║  • style="top:X%; left:Y%; width:Z%"                    ║
-    ║      top   = distância do topo da página em %           ║
-    ║      left  = distância da esquerda em %                 ║
-    ║      width = largura do botão em %                      ║
-    ║                                                          ║
-    ║  • href="..."  → link que abre ao clicar                ║
-    ║      WhatsApp: https://wa.me/5571993233142              ║
-    ║      Maps:     cole o link do Google Maps               ║
-    ║                                                          ║
-    ║  • Para calibrar a posição, adicione temporariamente:   ║
-    ║      style="... ; outline:2px dashed red"               ║
-    ║    no elemento .hotspot-btn                              ║
-    ║                                                          ║
+    ║  • data-page="5"  → página em que aparece               ║
+    ║  • top / left / width → posição em % da página          ║
+    ║  • href → link que abre ao clicar                       ║
+    ║  • Para ver a área: descomente o outline no CSS         ║
     ╚══════════════════════════════════════════════════════════╝
     -->
 
-    <!-- ══ GRUPO PÁGINA 5 ══════════════════════════════════
-         ✏️ Mude data-page para trocar de página
-    ═════════════════════════════════════════════════════ -->
+    <!-- ✏️ Mude data-page para trocar de página -->
     <div class="hotspot-group" data-page="5">
 
       <!-- BOTÃO 1 — Confirmar Presença (WhatsApp) -->
-      <!-- ✏️ Ajuste top/left/width para alinhar com sua arte -->
       <a class="hotspot-btn"
          href="https://wa.me/5571993233142"
          target="_blank"
          style="top: 41%; left: 2%; width: 96%;">
-        
       </a>
 
       <!-- BOTÃO 2 — Ver Local (Google Maps) -->
-      <!-- ✏️ Ajuste top/left/width para alinhar com sua arte -->
       <a class="hotspot-btn"
          href="https://maps.app.goo.gl/az4F91tWrhgbCHjw6"
          target="_blank"
          style="top: 54%; left: 2%; width: 96%;">
-        
       </a>
 
     </div>
-    <!-- FIM GRUPO PÁGINA 5 -->
 
     <!--
     ╔══════════════════════════════════════════════════════════╗
-    ║  ✏️  MODELO PARA ADICIONAR HOTSPOTS EM OUTRA PÁGINA:     ║
-    ╠══════════════════════════════════════════════════════════╣
+    ║  ✏️  MODELO PARA NOVA PÁGINA:                            ║
     ║                                                          ║
-    ║  <div class="hotspot-group" data-page="NUMERO_DA_PAGINA">║
+    ║  <div class="hotspot-group" data-page="NUMERO">          ║
     ║    <a class="hotspot-btn"                                ║
     ║       href="https://seu-link.com"                        ║
     ║       target="_blank"                                    ║
-    ║       style="top: 45%; left: 6%; width: 88%;">           ║
-    ║      <span class="hotspot-icon">🔗</span>                ║
-    ║      <span class="hotspot-label">Texto do Botão</span>   ║
+    ║       style="top: 45%; left: 2%; width: 96%;">           ║
     ║    </a>                                                  ║
     ║  </div>                                                  ║
-    ║                                                          ║
     ╚══════════════════════════════════════════════════════════╝
     -->
 
   </div><!-- /hotspot-layer -->
-
 </div><!-- /zoom-container -->
 
 <div class="controls">
@@ -349,7 +271,12 @@ body {
 <div id="zoom-badge">1×</div>
 <button id="zoom-reset">✕ zoom</button>
 
-<audio id="flipSound" src="music.mp3" preload="auto"></audio>
+<!--
+  ✏️ ÁUDIO
+  music.mp3 → música de fundo (toca em loop durante toda navegação)
+  Coloque o arquivo na raiz do projeto com este nome.
+-->
+<audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
 
 <script>
 /* ============================================================
@@ -374,25 +301,68 @@ const pageFlip = new St.PageFlip(
 
 pageFlip.loadFromHTML(document.querySelectorAll(".page"));
 
-/* Som de virar página */
-const sound = document.getElementById("flipSound");
-pageFlip.on("flip", () => {
-  try { sound.currentTime = 0; sound.play(); } catch(e) {}
-});
-
 /* Botões de navegação — só funcionam fora do zoom */
 document.getElementById("next").onclick = () => { if (scale === 1) pageFlip.flipNext(); };
 document.getElementById("prev").onclick = () => { if (scale === 1) pageFlip.flipPrev(); };
 
 /* ============================================================
+   MÚSICA DE FUNDO
+   — Arquivo: music.mp3 na raiz do projeto
+   — Loop contínuo durante toda a navegação
+   — NÃO reinicia ao virar página
+   — Botão ♪ liga / 🔇 desliga
+   ============================================================ */
+const bgMusic      = document.getElementById("bgMusic");
+const btnMusic     = document.getElementById("btn-music");
+let   musicOn      = false;
+let   musicStarted = false;
+
+bgMusic.volume = 0.75; // ✏️ volume: 0.0 (mudo) → 1.0 (máximo)
+
+function startMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+  bgMusic.play()
+    .then(() => { musicOn = true; syncMusicBtn(); })
+    .catch(() => { /* autoplay bloqueado — usuário deve clicar no botão ♪ */ });
+}
+
+function syncMusicBtn() {
+  btnMusic.textContent = musicOn ? '♪' : '🔇';
+  btnMusic.classList.toggle('muted', !musicOn);
+}
+
+btnMusic.addEventListener('click', () => {
+  if (!musicStarted) { startMusic(); return; }
+  if (musicOn) { bgMusic.pause(); musicOn = false; }
+  else          { bgMusic.play();  musicOn = true;  }
+  syncMusicBtn();
+});
+
+/* Inicia na primeira interação do usuário (política dos browsers) */
+['touchstart', 'mousedown', 'keydown'].forEach(ev =>
+  document.addEventListener(ev, startMusic, { once: true, passive: true })
+);
+
+/* ============================================================
+   HOTSPOTS — mostra/oculta por página
+   ============================================================ */
+const hotspotGroups = document.querySelectorAll('.hotspot-group');
+
+function updateHotspots(pageNumber) {
+  hotspotGroups.forEach(g => {
+    g.classList.toggle('active', parseInt(g.dataset.page, 10) === pageNumber);
+  });
+}
+
+pageFlip.on('flip', (e) => {
+  updateHotspots(e.data + 1); // page-flip usa índice 0-based
+});
+
+updateHotspots(1); // página inicial
+
+/* ============================================================
    ZOOM — pinch + duplo toque + arrastar
-   ============================================================
-   CORREÇÕES aplicadas vs versão anterior:
-   1. touchmove usa { passive: false } → permite e.preventDefault()
-   2. O zoom acumula a partir da escala atual (pinchStartScale)
-      em vez de reiniciar do zero a cada gesto
-   3. Zoom centrado no ponto médio dos dedos
-   4. Limites de pan calculados para nunca mostrar área vazia
    ============================================================ */
 const container = document.getElementById("zoom-container");
 const book      = document.getElementById("book");
@@ -401,35 +371,31 @@ const resetBtn  = document.getElementById("zoom-reset");
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 4;
-const DBL_SCALE = 2.5; // zoom do duplo toque
+const DBL_SCALE = 2.5;
 
-let scale          = 1;
-let posX           = 0;
-let posY           = 0;
-let isZoomed       = false;
+let scale           = 1;
+let posX            = 0;
+let posY            = 0;
+let isZoomed        = false;
 
-// Estado do pinch
-let pinching       = false;
+let pinching        = false;
 let pinchStartDist  = 0;
-let pinchStartScale = 1;   // ← escala no INÍCIO do pinch (não sempre 1)
-let pinchOriginX   = 0;
-let pinchOriginY   = 0;
-let pinchStartPosX = 0;
-let pinchStartPosY = 0;
+let pinchStartScale = 1;
+let pinchOriginX    = 0;
+let pinchOriginY    = 0;
+let pinchStartPosX  = 0;
+let pinchStartPosY  = 0;
 
-// Estado do pan
-let panning        = false;
-let panStartX      = 0;
-let panStartY      = 0;
-let panOriginX     = 0;
-let panOriginY     = 0;
+let panning         = false;
+let panStartX       = 0;
+let panStartY       = 0;
+let panOriginX      = 0;
+let panOriginY      = 0;
 
-// Duplo toque
-let lastTapTime    = 0;
-let lastTapX       = 0;
-let lastTapY       = 0;
+let lastTapTime     = 0;
+let lastTapX        = 0;
+let lastTapY        = 0;
 
-/* ── Helpers ── */
 function getDist(touches) {
   const dx = touches[0].clientX - touches[1].clientX;
   const dy = touches[0].clientY - touches[1].clientY;
@@ -445,14 +411,10 @@ function getMid(touches) {
 
 function clampPos(x, y, s) {
   const rect = container.getBoundingClientRect();
-  const w = rect.width;
-  const h = rect.height;
-  // O livro tem transform-origin: center center
-  // Offset de pan máximo para não mostrar fundo
-  const maxX =  (w * (s - 1)) / 2;
-  const minX = -(w * (s - 1)) / 2;
-  const maxY =  (h * (s - 1)) / 2;
-  const minY = -(h * (s - 1)) / 2;
+  const maxX =  (rect.width  * (s - 1)) / 2;
+  const minX = -(rect.width  * (s - 1)) / 2;
+  const maxY =  (rect.height * (s - 1)) / 2;
+  const minY = -(rect.height * (s - 1)) / 2;
   return {
     x: Math.min(maxX, Math.max(minX, x)),
     y: Math.min(maxY, Math.max(minY, y)),
@@ -468,24 +430,18 @@ function applyTransform(animate) {
   }
   book.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
 
-  // Badge e botão reset
   const show = scale > 1.05;
   badge.textContent = scale.toFixed(1).replace('.0', '') + '×';
   badge.classList.toggle('visible', show);
   resetBtn.classList.toggle('visible', show);
   isZoomed = show;
 
-  // Bloqueia/libera flipbook
-  if (show) {
-    pageFlip.disable();
-  } else {
-    pageFlip.enable();
-  }
+  if (show) { pageFlip.disable(); } else { pageFlip.enable(); }
 
-  // Sincroniza camada de hotspots com o zoom
+  // Sincroniza hotspots com o zoom
   const layer = document.getElementById('hotspot-layer');
   if (layer) {
-    layer.style.transform   = book.style.transform;
+    layer.style.transform     = book.style.transform;
     layer.style.pointerEvents = show ? 'none' : '';
   }
 }
@@ -499,79 +455,61 @@ resetBtn.addEventListener('click', () => resetZoom(true));
 
 /* ── TOUCHSTART ── */
 container.addEventListener('touchstart', e => {
-
   if (e.touches.length === 2) {
-    // Início do pinch
     e.preventDefault();
     pinching        = true;
     panning         = false;
     pinchStartDist  = getDist(e.touches);
-    pinchStartScale = scale;          // ← guarda escala atual!
+    pinchStartScale = scale;
     pinchStartPosX  = posX;
     pinchStartPosY  = posY;
-
-    const mid = getMid(e.touches);
+    const mid  = getMid(e.touches);
     const rect = container.getBoundingClientRect();
     pinchOriginX = mid.x - rect.left - rect.width  / 2;
     pinchOriginY = mid.y - rect.top  - rect.height / 2;
-
-  } else if (e.touches.length === 1) {
-    if (isZoomed) {
-      // Início do pan
-      panning    = true;
-      panStartX  = e.touches[0].clientX;
-      panStartY  = e.touches[0].clientY;
-      panOriginX = posX;
-      panOriginY = posY;
-    }
+  } else if (e.touches.length === 1 && isZoomed) {
+    panning    = true;
+    panStartX  = e.touches[0].clientX;
+    panStartY  = e.touches[0].clientY;
+    panOriginX = posX;
+    panOriginY = posY;
   }
-
-}, { passive: false });   // ← passive: false obrigatório!
+}, { passive: false });
 
 /* ── TOUCHMOVE ── */
 container.addEventListener('touchmove', e => {
-
   if (e.touches.length === 2 && pinching) {
-    e.preventDefault();   // ← agora funciona porque passive: false
-
-    const newDist = getDist(e.touches);
-    const ratio   = newDist / pinchStartDist;
-    // Acumula a partir da escala do início do pinch
+    e.preventDefault();
+    const newDist  = getDist(e.touches);
+    const ratio    = newDist / pinchStartDist;
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStartScale * ratio));
-
-    // Zoom centrado na origem do pinch
-    const scaleDelta = newScale / scale;
-    posX = pinchOriginX + scaleDelta * (pinchStartPosX - pinchOriginX);
-    posY = pinchOriginY + scaleDelta * (pinchStartPosY - pinchOriginY);
+    const delta    = newScale / scale;
+    posX  = pinchOriginX + delta * (pinchStartPosX - pinchOriginX);
+    posY  = pinchOriginY + delta * (pinchStartPosY - pinchOriginY);
     scale = newScale;
-
-    const clamped = clampPos(posX, posY, scale);
-    posX = clamped.x; posY = clamped.y;
+    const c = clampPos(posX, posY, scale);
+    posX = c.x; posY = c.y;
     applyTransform(false);
-
   } else if (e.touches.length === 1 && panning && isZoomed) {
     e.preventDefault();
-    const dx = e.touches[0].clientX - panStartX;
-    const dy = e.touches[0].clientY - panStartY;
-    const clamped = clampPos(panOriginX + dx, panOriginY + dy, scale);
-    posX = clamped.x; posY = clamped.y;
+    const c = clampPos(
+      panOriginX + e.touches[0].clientX - panStartX,
+      panOriginY + e.touches[0].clientY - panStartY,
+      scale
+    );
+    posX = c.x; posY = c.y;
     applyTransform(false);
   }
-
-}, { passive: false });   // ← passive: false obrigatório!
+}, { passive: false });
 
 /* ── TOUCHEND ── */
 container.addEventListener('touchend', e => {
-  if (e.touches.length < 2) {
-    if (pinching) {
-      pinching = false;
-      // Se soltou com escala muito baixa, reseta
-      if (scale < 1.1) resetZoom(true);
-    }
+  if (e.touches.length < 2 && pinching) {
+    pinching = false;
+    if (scale < 1.1) resetZoom(true);
   }
   if (e.touches.length === 0) panning = false;
 
-  /* Duplo toque */
   if (e.changedTouches.length === 1) {
     const now = Date.now();
     const t   = e.changedTouches[0];
@@ -583,93 +521,24 @@ container.addEventListener('touchend', e => {
       if (isZoomed) {
         resetZoom(true);
       } else {
-        // Zoom centrado no ponto tocado
         const rect = container.getBoundingClientRect();
         const ox   = t.clientX - rect.left - rect.width  / 2;
         const oy   = t.clientY - rect.top  - rect.height / 2;
         scale = DBL_SCALE;
         posX  = ox - DBL_SCALE * ox;
         posY  = oy - DBL_SCALE * oy;
-        const clamped = clampPos(posX, posY, scale);
-        posX = clamped.x; posY = clamped.y;
+        const c = clampPos(posX, posY, scale);
+        posX = c.x; posY = c.y;
         applyTransform(true);
       }
       lastTapTime = 0;
       return;
     }
-
     lastTapTime = now;
     lastTapX    = t.clientX;
     lastTapY    = t.clientY;
   }
-
 }, { passive: true });
-
-/* Inicializa áudio no primeiro toque */
-document.addEventListener('touchstart', () => {
-  try { sound.load(); } catch(e) {}
-}, { once: true });
-
-/* ============================================================
-   MÚSICA DE FUNDO
-   ── Toca music.mp3 em loop contínuo
-   ── Botão ♪ / 🔇 no canto superior esquerdo
-   ── Inicia automaticamente na primeira interação
-   ============================================================ */
-const bgMusic      = document.getElementById("flipSound");
-const btnMusic     = document.getElementById("btn-music");
-let   musicOn      = false;
-let   musicStarted = false;
-
-bgMusic.loop   = true;   // toca em loop durante toda navegação
-bgMusic.volume = 0.75;   // ✏️ volume: 0.0 (mudo) → 1.0 (máximo)
-
-function startMusic() {
-  if (musicStarted) return;
-  musicStarted = true;
-  bgMusic.currentTime = 0;
-  bgMusic.play()
-    .then(() => { musicOn = true; syncMusicBtn(); })
-    .catch(() => { /* autoplay bloqueado; usuário clica no botão */ });
-}
-
-function syncMusicBtn() {
-  btnMusic.textContent = musicOn ? '♪' : '🔇';
-  btnMusic.classList.toggle('muted', !musicOn);
-}
-
-btnMusic.addEventListener('click', () => {
-  if (!musicStarted) { startMusic(); return; }
-  if (musicOn) { bgMusic.pause(); musicOn = false; }
-  else          { bgMusic.play();  musicOn = true;  }
-  syncMusicBtn();
-});
-
-// Inicia na primeira interação (política dos browsers)
-['touchstart', 'mousedown', 'keydown'].forEach(ev =>
-  document.addEventListener(ev, startMusic, { once: true, passive: true })
-);
-
-/* ============================================================
-   HOTSPOTS — mostra/oculta por página
-   ── Atualiza ao virar página via evento "flip" do page-flip
-   ── Transform e pointer-events sincronizados via applyTransform
-   ============================================================ */
-const hotspotGroups = document.querySelectorAll('.hotspot-group');
-
-function updateHotspots(pageNumber) {
-  hotspotGroups.forEach(g => {
-    g.classList.toggle('active', parseInt(g.dataset.page, 10) === pageNumber);
-  });
-}
-
-// Ouve virada de página para atualizar hotspots
-pageFlip.on('flip', (e) => {
-  updateHotspots(e.data + 1); // page-flip usa índice 0-based
-});
-
-// Inicializa na página 1
-updateHotspots(1);
 </script>
 </body>
 </html>
