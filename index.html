@@ -1,73 +1,78 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Catálogo</title>
 
+<script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+
 <style>
+
 body{
 margin:0;
 background:#e9e9e9;
+font-family:Arial, Helvetica, sans-serif;
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
 height:100vh;
-font-family:Arial, Helvetica, sans-serif;
+overflow:hidden;
 }
 
-.book{
-position:relative;
-width:92vw;
+/* área do flipbook */
+
+#book{
+width:95vw;
 max-width:420px;
-height:90vh;
-perspective:2000px;
+height:92vh;
 }
+
+/* páginas */
 
 .page{
-position:absolute;
-width:100%;
-height:100%;
-transform-origin:left;
-transition:transform 0.9s;
-box-shadow:0 15px 35px rgba(0,0,0,0.25);
-border-radius:6px;
-overflow:hidden;
 background:white;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
 .page img{
 width:100%;
 height:100%;
 object-fit:contain;
-background:white;
 }
 
-.page.flip{
-transform:rotateY(-180deg);
-}
+/* botões */
 
 .controls{
-margin-top:10px;
+position:fixed;
+bottom:20px;
+display:flex;
+gap:20px;
 }
 
 button{
 border:none;
 background:#333;
 color:white;
-padding:10px 20px;
-font-size:18px;
+font-size:20px;
+padding:10px 18px;
 border-radius:6px;
-margin:5px;
 }
+
 </style>
 
 </head>
 
 <body>
 
-<div class="book">
+<div id="book">
 
 <div class="page"><img src="pages/1.jpg"></div>
 <div class="page"><img src="pages/2.jpg"></div>
@@ -86,33 +91,52 @@ margin:5px;
 <audio id="flipSound" src="flip.mp3"></audio>
 
 <script>
-const pages=document.querySelectorAll(".page");
-const next=document.getElementById("next");
-const prev=document.getElementById("prev");
+
+/* inicia flipbook */
+
+const pageFlip = new St.PageFlip(
+document.getElementById("book"),
+{
+width:400,
+height:700,
+size:"stretch",
+minWidth:300,
+maxWidth:600,
+minHeight:400,
+maxHeight:900,
+maxShadowOpacity:0.5,
+showCover:true,
+mobileScrollSupport:false
+}
+);
+
+pageFlip.loadFromHTML(document.querySelectorAll(".page"));
+
+/* som de página */
+
 const sound=document.getElementById("flipSound");
 
-let current=0;
+pageFlip.on("flip",()=>{
 
-function playSound(){
 sound.currentTime=0;
 sound.play();
+
+});
+
+/* botões */
+
+document.getElementById("next").onclick=()=>{
+
+pageFlip.flipNext();
+
 }
 
-next.onclick=function(){
-if(current < pages.length){
-pages[current].classList.add("flip");
-playSound();
-current++;
-}
+document.getElementById("prev").onclick=()=>{
+
+pageFlip.flipPrev();
+
 }
 
-prev.onclick=function(){
-if(current>0){
-current--;
-pages[current].classList.remove("flip");
-playSound();
-}
-}
 </script>
 
 </body>
