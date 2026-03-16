@@ -53,7 +53,12 @@ body {
   user-select: none;
   -webkit-user-drag: none;
 }
-
+.page video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
 /* Botões de navegação */
 .controls {
   position: fixed;
@@ -211,6 +216,12 @@ body {
     <div class="page"><img src="pages/6.jpg" alt="Página 6"></div>
     <div class="page"><img src="pages/7.jpg" alt="Página 7"></div>
     <div class="page"><img src="pages/8.jpg" alt="Página 8"></div>
+    <div class="page">
+  <video autoplay muted loop playsinline>
+    <source src="pages/9.mp4" type="video/mp4">
+  </video>
+      
+</div>
   </div>
 
   <!-- ══ CAMADA DE HOTSPOTS ══ -->
