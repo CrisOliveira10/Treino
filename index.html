@@ -3,8 +3,10 @@
 <html lang="pt-BR">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Catálogo</title>
 
 <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
@@ -23,15 +25,11 @@ height:100vh;
 overflow:hidden;
 }
 
-/* área do livro */
-
 #book{
 width:95vw;
 max-width:420px;
 height:92vh;
 }
-
-/* páginas */
 
 .page{
 background:white;
@@ -45,7 +43,7 @@ overflow:hidden;
 width:100%;
 height:100%;
 object-fit:contain;
-transform-origin:center;
+transform-origin:center center;
 transition:transform .05s linear;
 }
 
@@ -93,7 +91,7 @@ border-radius:6px;
 
 <script>
 
-/* inicia flipbook */
+/* FLIPBOOK */
 
 const pageFlip = new St.PageFlip(
 document.getElementById("book"),
@@ -101,8 +99,13 @@ document.getElementById("book"),
 width:400,
 height:700,
 size:"stretch",
+minWidth:300,
+maxWidth:600,
+minHeight:400,
+maxHeight:900,
 showCover:false,
-mobileScrollSupport:false
+mobileScrollSupport:false,
+maxShadowOpacity:0.5
 }
 );
 
@@ -117,8 +120,6 @@ pageFlip.on("flip",()=>{
 sound.currentTime=0;
 sound.play();
 
-/* reset zoom ao trocar página */
-
 resetZoom();
 
 });
@@ -126,31 +127,26 @@ resetZoom();
 /* botões */
 
 document.getElementById("next").onclick=()=>{
-
 if(scale===1) pageFlip.flipNext();
-
 }
 
 document.getElementById("prev").onclick=()=>{
-
 if(scale===1) pageFlip.flipPrev();
-
 }
 
-/* ======================= */
-/* SISTEMA DE ZOOM REAL */
-/* ======================= */
+/* ================= */
+/* ZOOM PROFISSIONAL */
+/* ================= */
 
 let scale=1;
 let posX=0;
 let posY=0;
 let startX=0;
 let startY=0;
-
 let startDistance=0;
 let zooming=false;
 
-/* pega imagem da página atual */
+/* imagem da página ativa */
 
 function getActiveImage(){
 
@@ -162,7 +158,7 @@ return page.querySelector("img");
 
 }
 
-/* distância entre dedos */
+/* distância dedos */
 
 function getDistance(touches){
 
@@ -173,7 +169,38 @@ return Math.sqrt(dx*dx+dy*dy);
 
 }
 
-/* início gesto */
+/* aplicar zoom */
+
+function applyTransform(img){
+
+img.style.transform=
+`translate(${posX}px,${posY}px) scale(${scale})`;
+
+}
+
+/* limitar movimento */
+
+function clamp(value,min,max){
+return Math.min(Math.max(value,min),max);
+}
+
+/* reset */
+
+function resetZoom(){
+
+scale=1;
+posX=0;
+posY=0;
+
+document.querySelectorAll(".page img").forEach(img=>{
+img.style.transform="scale(1)";
+});
+
+pageFlip.enable();
+
+}
+
+/* toque início */
 
 document.addEventListener("touchstart",(e)=>{
 
@@ -212,15 +239,16 @@ if(e.touches.length===2){
 e.preventDefault();
 
 const newDistance=getDistance(e.touches);
+
 let zoom=newDistance/startDistance;
 
-scale=Math.min(Math.max(1,zoom),4);
+scale=clamp(zoom,1,8);
 
 applyTransform(img);
 
 }
 
-/* mover imagem */
+/* mover */
 
 if(e.touches.length===1 && scale>1){
 
@@ -240,33 +268,10 @@ document.addEventListener("touchend",()=>{
 if(zooming){
 
 zooming=false;
-pageFlip.enable();
 
 }
 
 });
-
-/* aplicar transform */
-
-function applyTransform(img){
-
-img.style.transform=`translate(${posX}px,${posY}px) scale(${scale})`;
-
-}
-
-/* reset */
-
-function resetZoom(){
-
-scale=1;
-posX=0;
-posY=0;
-
-document.querySelectorAll(".page img").forEach(img=>{
-img.style.transform="scale(1)";
-});
-
-}
 
 /* duplo toque */
 
@@ -275,11 +280,11 @@ let lastTap=0;
 document.addEventListener("touchend",(e)=>{
 
 const now=new Date().getTime();
-const diff=now-lastTap;
+const tapLength=now-lastTap;
 
 const img=getActiveImage();
 
-if(diff<300 && diff>0 && img){
+if(tapLength<300 && tapLength>0 && img){
 
 if(scale===1){
 
@@ -289,7 +294,6 @@ pageFlip.disable();
 }else{
 
 resetZoom();
-pageFlip.enable();
 
 }
 
