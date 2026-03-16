@@ -46,7 +46,7 @@ body {
    PÁGINAS
 ══════════════════════════════════════ */
 .page {
-  background: white;
+  background: white; /* fundo branco da virada de página — não altere */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,9 +96,9 @@ body {
   height: 44px;
   border-radius: 50%;
   background: rgba(0,0,0,0.55);
-  border: 2px solid rgba(255,255,255,0.35);
-  color: white;
-  font-size: 20px;
+  border: 2px solid rgba(255,255,255,0.5);
+  color: white;           /* ✏️ cor do ícone */
+  font-size: 22px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -107,14 +107,16 @@ body {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   transition: background 0.2s, opacity 0.2s;
-  animation: musicPulse 2.2s ease-in-out infinite;
+  /* Pulse mais forte e visível */
+  animation: musicPulse 1.6s ease-in-out infinite;
 }
-#btn-music:hover        { background: rgba(0,0,0,0.75); animation-play-state: paused; }
-#btn-music.muted        { animation: none; opacity: 0.5; }
+#btn-music:hover  { background: rgba(0,0,0,0.75); animation-play-state: paused; }
+#btn-music.muted  { animation: none; opacity: 0.45; }
 
 @keyframes musicPulse {
-  0%, 100% { box-shadow: 0 0 0 0   rgba(255,255,255,0.4); }
-  50%       { box-shadow: 0 0 0 9px rgba(255,255,255,0.0); }
+  0%   { box-shadow: 0 0 0   0px rgba(255,255,255,0.85); }
+  50%  { box-shadow: 0 0 0  16px rgba(255,255,255,0.0);  }
+  100% { box-shadow: 0 0 0   0px rgba(255,255,255,0.85); }
 }
 
 /* ══════════════════════════════════════
@@ -196,19 +198,12 @@ body {
   align-items: center;
   text-decoration: none;
   border: none;
-  background: transparent;
   cursor: pointer;
   padding: 0;
-  /* Área clicável ampla, sem visual próprio —
-     a arte do Canva já tem o visual do botão */
-  animation: hotPulse 2.4s ease-in-out infinite;
-}
-@keyframes hotPulse {
-  0%, 100% { filter: drop-shadow(0 0 0px  rgba(255,255,255,0.0)); }
-  50%       { filter: drop-shadow(0 0 10px rgba(255,255,255,0.6)); }
+  /* Sem animação visível — botão é 100% invisível sobre a arte */
 }
 
-/* Inner: área clicável transparente alinhada */
+/* Inner: área clicável — totalmente transparente por padrão */
 .hotspot-inner {
   display: flex;
   align-items: center;
@@ -216,8 +211,21 @@ body {
   width: 100%;
   padding: 12px 16px;
   border-radius: 40px;
-  /* DEBUG: descomente para ver a área clicável */
-  /* outline: 2px dashed red; */
+
+  /*
+  ✏️ VISIBILIDADE DO HOTSPOT
+  ─────────────────────────────────────────────
+  INVISÍVEL (padrão — use assim em produção):
+    background: transparent;
+    outline: none;
+
+  VISÍVEL para calibrar posição (ative ao editar):
+    background: rgba(255, 0, 0, 0.25);
+    outline: 2px dashed red;
+  ─────────────────────────────────────────────
+  */
+  background: transparent; /* ✏️ troque para rgba(255,0,0,0.25) para ver a área */
+  outline: none;            /* ✏️ troque para 2px dashed red para ver o contorno */
 }
 
 /* Ícone circular */
@@ -230,23 +238,34 @@ body {
   pointer-events: none;
 }
 
-/* Texto */
+/* Texto — invisível (a arte já tem o visual) */
 .hotspot-label {
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #FFD700;
-  text-shadow: 2px 2px 0 #6B0000;
   pointer-events: none;
   white-space: nowrap;
+
+  /*
+  ✏️ TEXTO DO HOTSPOT
+  ─────────────────────────────────────────────
+  INVISÍVEL (padrão):
+    color: transparent;
+
+  VISÍVEL para calibrar (ative ao editar):
+    color: #FFD700;
+    text-shadow: 2px 2px 0 #6B0000;
+  ─────────────────────────────────────────────
+  */
+  color: transparent; /* ✏️ troque para #FFD700 para ver o texto */
 }
 </style>
 </head>
 <body>
 
 <!-- ══ BOTÃO DE MÚSICA — canto superior esquerdo ══ -->
-<button id="btn-music" title="Música">🎵</button>
+<button id="btn-music" title="Música">♪</button>
 
 <div id="zoom-container">
   <div id="book">
@@ -412,10 +431,10 @@ function startMusic() {
 
 function syncMusicBtn() {
   if (musicOn) {
-    btnMusic.textContent = '🎵';
+    btnMusic.textContent = '♪';
     btnMusic.classList.remove('muted');
   } else {
-    btnMusic.textContent = '🔇';
+    btnMusic.textContent = '♪';
     btnMusic.classList.add('muted');
   }
 }
