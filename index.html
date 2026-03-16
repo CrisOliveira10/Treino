@@ -324,7 +324,11 @@ function startMusic() {
   musicStarted = true;
   bgMusic.play()
     .then(() => { musicOn = true; syncMusicBtn(); })
-    .catch(() => { /* autoplay bloqueado — usuário deve clicar no botão ♪ */ });
+    .catch(() => {
+      // Autoplay ainda bloqueado — será tentado novamente
+      // no próximo gesto via onFirstInteraction
+      musicStarted = false;
+    });
 }
 
 function syncMusicBtn() {
@@ -340,15 +344,16 @@ btnMusic.addEventListener('click', () => {
 });
 
 /* ============================================================
-   AUTOPLAY NA PRIMEIRA INTERAÇÃO
-   — Browsers bloqueiam autoplay sem gesto do usuário.
-   — Capturamos o PRIMEIRO toque/clique em qualquer lugar
-     da tela e iniciamos a música imediatamente.
-   — O botão ♪ dá autonomia para pausar e retomar depois.
+   AUTOPLAY — dispara no PRIMEIRO TOQUE na página 1
+   ──────────────────────────────────────────────────────────
+   Estratégia dupla:
+   1. onFirstInteraction → qualquer toque na tela (mais rápido)
+   2. pageFlip.on('flip') → virada da página 1 (garante o
+      momento exato que o convite "abre")
+   Ambos chamam startMusic(), que executa só uma vez.
    ============================================================ */
 function onFirstInteraction() {
   startMusic();
-  // Remove todos os listeners após o primeiro disparo
   document.removeEventListener('touchstart', onFirstInteraction);
   document.removeEventListener('touchend',   onFirstInteraction);
   document.removeEventListener('mousedown',  onFirstInteraction);
@@ -372,7 +377,12 @@ function updateHotspots(pageNumber) {
 }
 
 pageFlip.on('flip', (e) => {
-  updateHotspots(e.data + 1); // page-flip usa índice 0-based
+  const pageNumber = e.data + 1; // page-flip usa índice 0-based
+
+  // ── Inicia música na virada da página 1 (momento exato da abertura) ──
+  if (pageNumber === 2) startMusic();
+
+  updateHotspots(pageNumber);
 });
 
 updateHotspots(1); // página inicial
