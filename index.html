@@ -339,10 +339,26 @@ btnMusic.addEventListener('click', () => {
   syncMusicBtn();
 });
 
-/* Inicia na primeira interação do usuário (política dos browsers) */
-['touchstart', 'mousedown', 'keydown'].forEach(ev =>
-  document.addEventListener(ev, startMusic, { once: true, passive: true })
-);
+/* ============================================================
+   AUTOPLAY NA PRIMEIRA INTERAÇÃO
+   — Browsers bloqueiam autoplay sem gesto do usuário.
+   — Capturamos o PRIMEIRO toque/clique em qualquer lugar
+     da tela e iniciamos a música imediatamente.
+   — O botão ♪ dá autonomia para pausar e retomar depois.
+   ============================================================ */
+function onFirstInteraction() {
+  startMusic();
+  // Remove todos os listeners após o primeiro disparo
+  document.removeEventListener('touchstart', onFirstInteraction);
+  document.removeEventListener('touchend',   onFirstInteraction);
+  document.removeEventListener('mousedown',  onFirstInteraction);
+  document.removeEventListener('keydown',    onFirstInteraction);
+}
+
+document.addEventListener('touchstart', onFirstInteraction, { passive: true });
+document.addEventListener('touchend',   onFirstInteraction, { passive: true });
+document.addEventListener('mousedown',  onFirstInteraction);
+document.addEventListener('keydown',    onFirstInteraction);
 
 /* ============================================================
    HOTSPOTS — mostra/oculta por página
