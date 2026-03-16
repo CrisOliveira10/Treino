@@ -25,7 +25,7 @@ height:100vh;
 overflow:hidden;
 }
 
-/* container do zoom */
+/* área do zoom */
 
 #zoom-container{
 width:95vw;
@@ -41,7 +41,7 @@ touch-action:none;
 width:100%;
 height:100%;
 transform-origin:center center;
-transition:transform 0.2s ease;
+transition:transform 0.15s ease;
 }
 
 /* páginas */
@@ -120,7 +120,7 @@ maxWidth:600,
 minHeight:400,
 maxHeight:900,
 maxShadowOpacity:0.5,
-showCover:true,
+showCover:false, /* remove capa dura */
 mobileScrollSupport:false
 }
 );
@@ -146,13 +146,16 @@ document.getElementById("prev").onclick=()=>{
 pageFlip.flipPrev();
 }
 
-/* ZOOM COM DOIS DEDOS */
+/* ZOOM COM GESTO */
 
 const container=document.getElementById("zoom-container");
 const book=document.getElementById("book");
 
 let scale=1;
 let startDistance=0;
+let zooming=false;
+
+/* distância entre dedos */
 
 function getDistance(touches){
 const dx=touches[0].clientX - touches[1].clientX;
@@ -160,13 +163,24 @@ const dy=touches[0].clientY - touches[1].clientY;
 return Math.sqrt(dx*dx + dy*dy);
 }
 
+/* início do gesto */
+
 container.addEventListener("touchstart",(e)=>{
 
 if(e.touches.length===2){
+
+zooming=true;
 startDistance=getDistance(e.touches);
+
+/* bloqueia virar página */
+
+pageFlip.disable();
+
 }
 
 });
+
+/* movimento */
 
 container.addEventListener("touchmove",(e)=>{
 
@@ -186,11 +200,25 @@ book.style.transform="scale("+scale+")";
 
 });
 
+/* fim do gesto */
+
 container.addEventListener("touchend",()=>{
 
+if(zooming){
+
+zooming=false;
+
+/* reativa virada */
+
+pageFlip.enable();
+
+}
+
 if(scale<1.05){
+
 scale=1;
 book.style.transform="scale(1)";
+
 }
 
 });
